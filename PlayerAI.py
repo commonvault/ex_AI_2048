@@ -165,18 +165,78 @@ class PlayerAI(BaseAI):
         """ to ensure that values of tiles are ALL either increasing or decreasing 
              (NOT equal) along BOTH the 4 left/right + 4 up/down directions = max 8 """
         h = 0
-        for i in range(4):
-            if grid.map[i][0] < grid.map[i][1] and grid.map[i][1] < grid.map[i][2] and grid.map[i][2] < grid.map[i][3]:
-                h += 1
-            if grid.map[i][0] > grid.map[i][1] and grid.map[i][1] > grid.map[i][2] and grid.map[i][2] > grid.map[i][3]:
-                h += 1            
+        # for i in range(4):
+        #     if grid.map[i][0] < grid.map[i][1] and grid.map[i][1] < grid.map[i][2] and grid.map[i][2] < grid.map[i][3]:
+        #         h += 1
+        #     if grid.map[i][0] > grid.map[i][1] and grid.map[i][1] > grid.map[i][2] and grid.map[i][2] > grid.map[i][3]:
+        #         h += 1            
         for j in range(4):
-            if grid.map[0][j] < grid.map[1][j] and grid.map[1][j] < grid.map[2][j] and grid.map[2][j] < grid.map[3][j]:
-                h += 1
-            if grid.map[0][j] > grid.map[1][j] and grid.map[1][j] > grid.map[2][j] and grid.map[2][j] > grid.map[3][j]:
-                h += 1
+        #     if grid.map[0][j] < grid.map[1][j] and grid.map[1][j] < grid.map[2][j] and grid.map[2][j] < grid.map[3][j]:
+        #         h += 1
+        #     if grid.map[0][j] > grid.map[1][j] and grid.map[1][j] > grid.map[2][j] and grid.map[2][j] > grid.map[3][j]:
+        #         h += 1
+            for i in range(3):
+                if grid.map[i][j] > grid.map[i+1][j]:
+                    h += 1 # keep higher values on lower row
+        for j in range(3):
+            try:
+                d = math.log2(grid.map[0][j+1]/grid.map[0][j])
+                if d <= 0:
+                    h += d
+            except ValueError:
+                h += 0
+            except ZeroDivisionError:
+                h += 0
+            try:
+                d = math.log2(grid.map[1][j]/grid.map[1][j+1])
+                if d <= 0:
+                    h += d
+            except ValueError:
+                h += 0
+            except ZeroDivisionError:
+                h += 0
+            try:
+                d = math.log2(grid.map[2][j+1]/grid.map[2][j])
+                if d <= 0:
+                    h += d
+            except ValueError:
+                h += 0
+            except ZeroDivisionError:
+                h += 0
+            try:
+                d = math.log2(grid.map[3][j]/grid.map[3][j+1])
+                if d <= 0:
+                    h += d
+            except ValueError:
+                h += 0
+            except ZeroDivisionError:
+                h += 0
+        try:
+            d = math.log2(grid.map[1][3]/grid.map[0][3])
+            if d <= 0:
+                h += d
+        except ValueError:
+            h += 0
+        except ZeroDivisionError:
+            h += 0
+        try:
+            d = math.log2(grid.map[2][0]/grid.map[1][0])
+            if d <= 0:
+                h += d
+        except ValueError:
+            h += 0
+        except ZeroDivisionError:
+            h += 0
+        try:
+            d = math.log2(grid.map[3][3]/grid.map[2][3])
+            if d <= 0:
+                h += d
+        except ValueError:
+            h += 0
+        except ZeroDivisionError:
+            h += 0
         """ normalised h to (0,1) scale """
-        return h/8 
+        return h # h is forced to be negative
     
     def smoothness(self, grid):
         """ in order to merge (at the next move), adjacent tiles need to be the same value, 
@@ -191,18 +251,18 @@ class PlayerAI(BaseAI):
                 if grid.map[i][j] == grid.map[i+1][j]:
                     h += 1
         """ normalised h to (0,1) scale """
-        return h/24
+        return h#/24
     
     def freeTiles(self, grid):
         """ heuristic function as a penalty for having too few free tiles, max = 16-1 """
-        return len(grid.getAvailableCells())/15
+        return len(grid.getAvailableCells())#/15 # get normalised to range between 0 and one
     
     def maxAtCorner(self, grid):
         """ to ensure that max value stays at corner, binary can be dominated by high log2(maxValue) 
             if aim for log2(512)=9 then its weight should be >= 9 times of log2(grid.getMaxTile()) """
         mtv = grid.getMaxTile()
-        if grid.map[0][0] == mtv or grid.map[0][3] == mtv or grid.map[3][0] == mtv or grid.map[3][3] == mtv:
-            return 1
+        if grid.map[0][0] == mtv:# or grid.map[0][3] == mtv or grid.map[3][0] == mtv or grid.map[3][3] == mtv:
+            return 40 # focus on one corner, give weight for 10*4 times the others
         return 0
     
     def heuristic(self, grid):
@@ -210,5 +270,5 @@ class PlayerAI(BaseAI):
             maximum at math.log2(2048) = 11.0 so no other heuristics should exceed 11 """
 #        return grid.getMaxTile()
 #        return math.log2(grid.getMaxTile())/4 + self.monotonicity(grid)/4 + self.smoothness(grid)/4 + self.freeTiles(grid)/4
-        return self.smoothness(grid)/3 + self.freeTiles(grid)/3 + self.maxAtCorner(grid)/3   # the best outcome so far
+        return self.monotonicity(grid)/6 + self.smoothness(grid)/6 + self.freeTiles(grid)/6 + self.maxAtCorner(grid)/3
 

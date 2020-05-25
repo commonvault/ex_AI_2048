@@ -16,4 +16,7 @@ In the 2048-puzzle game, the computer AI is technically not "adversarial". In pa
 - Assign **heuristic weights** for more than one heuristic functions.
 
 **Resources:** 
-[stackoverflow post](https://stackoverflow.com/questions/22342854/what-is-the-optimal-algorithm-for-the-game-2048) about smoothness and monotonicity.
+[stackoverflow post](https://stackoverflow.com/questions/22342854/what-is-the-optimal-algorithm-for-the-game-2048) about smoothness, monotonicity, and free tiles.
+
+**In-progress:**
+To model the adversarial search with reinforcement learning instead of minimax.
